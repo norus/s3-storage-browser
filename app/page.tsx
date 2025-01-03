@@ -34,7 +34,10 @@ export default function App() {
   }
 
   return (
-    <Authenticator>
+    <Authenticator
+      initialState="signIn"
+      hideSignUp={true}
+    >
       {({ signOut, user }) => (
         <main>
             <h1>Hello {user?.username}</h1>
