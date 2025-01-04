@@ -49,6 +49,11 @@ export default function App() {
     >
       {({ signOut, user }) => {
         const cognitoUser = user as unknown as CognitoUser;
+
+        console.log('Full user object:', user);
+        console.log('User attributes:', cognitoUser.attributes);
+        console.log('Firstname attribute:', cognitoUser?.attributes?.['custom:firstname']);
+        
         const firstName = cognitoUser?.attributes?.['custom:firstname'] || cognitoUser?.username;
         
         return (
