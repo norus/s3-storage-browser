@@ -10,6 +10,15 @@ import "@aws-amplify/ui-react/styles.css";
 import { Authenticator } from '@aws-amplify/ui-react';
 import { StorageBrowser } from '../components/StorageBrowser';
 
+// Extend the AuthUser type to include our custom attributes
+interface CognitoUser {
+  username?: string;
+  attributes?: {
+    'custom:firstname'?: string;
+    [key: string]: any;
+  };
+}
+
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
@@ -38,17 +47,21 @@ export default function App() {
       initialState="signIn"
       hideSignUp={true}
     >
-      {({ signOut, user }) => (
-        <main>
-            <h1>Hello {user?.firstname}</h1>
+      {({ signOut, user }) => {
+        const cognitoUser = user as unknown as CognitoUser;
+        const firstName = cognitoUser?.attributes?.['custom:firstname'] || cognitoUser?.username;
+        
+        return (
+          <main>
+            <h1>Hello {firstName}</h1>
             <button onClick={signOut}>Sign out</button>
 
-          {/* StorageBrowser Component */}
-          <h2>Your Files</h2>
-          <StorageBrowser />
-
-        </main>
-      )}
+            {/* StorageBrowser Component */}
+            <h2>Your Files</h2>
+            <StorageBrowser />
+          </main>
+        );
+      }}
     </Authenticator>
   );
 }
