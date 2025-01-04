@@ -4,25 +4,15 @@ import { useState, useEffect } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
 import "./../app/app.css";
-import { Amplify, AuthOptions } from "aws-amplify";
+import { Amplify } from "aws-amplify";
+import { fetchUserAttributes } from 'aws-amplify/auth';
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import { Authenticator } from '@aws-amplify/ui-react';
 import { StorageBrowser } from '../components/StorageBrowser';
 
-// Configure Auth to include custom attributes
-const authConfig: AuthOptions = {
-  ...outputs.auth,
-  userAttributes: {
-    include: ['custom:firstname', 'name'],
-  }
-};
-
-// Configure Amplify with the auth settings
-Amplify.configure({
-  ...outputs,
-  Auth: authConfig
-});
+// Configure Amplify
+Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
 
@@ -37,11 +27,22 @@ interface CognitoUser {
 
 export default function App() {
   const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+  const [firstName, setFirstName] = useState<string>("");
 
   function listTodos() {
     client.models.Todo.observeQuery().subscribe({
       next: (data) => setTodos([...data.items]),
     });
+  }
+
+  async function getUserAttributes() {
+    try {
+      const attributes = await fetchUserAttributes();
+      console.log('User attributes:', attributes);
+      setFirstName(attributes['custom:firstname'] || '');
+    } catch (error) {
+      console.error('Error fetching user attributes:', error);
+    }
   }
 
   useEffect(() => {
@@ -62,14 +63,17 @@ export default function App() {
       {({ signOut, user }) => {
         const cognitoUser = user as unknown as CognitoUser;
         console.log('Full user object:', user);
-        console.log('User attributes:', cognitoUser.attributes);
-        console.log('Firstname attribute:', cognitoUser?.attributes?.['custom:firstname']);
         
-        const firstName = cognitoUser?.attributes?.['custom:firstname'] || cognitoUser?.username;
+        // Fetch attributes when user is available
+        useEffect(() => {
+          if (user) {
+            getUserAttributes();
+          }
+        }, [user]);
         
         return (
           <main>
-            <h1>Hello {firstName}</h1>
+            <h1>Hello {firstName || cognitoUser?.username}</h1>
             <button onClick={signOut}>Sign out</button>
 
             {/* StorageBrowser Component */}
