@@ -10,7 +10,7 @@ import { StorageBrowser } from '../components/StorageBrowser';
 Amplify.configure(outputs);
 
 export default function App() {
-  const getPersonalizedGreeting = (loginId) => {
+  const getPersonalizedGreeting = (loginId: string | undefined) => {
     switch (loginId) {
       case "dhoeckelmann@fjschuette.de":
         return "Hello Daniela";
