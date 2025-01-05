@@ -11,40 +11,41 @@ import { useEffect, useState } from 'react';
 
 Amplify.configure(outputs);
 
-export default function App() {
+function AuthenticatedContent({ signOut, user }) {
   const [firstName, setFirstName] = useState<string>('');
 
-  const getUserAttributes = async () => {
-    try {
-      const attributes = await fetchUserAttributes();
-      setFirstName(attributes['custom:firstname'] || '');
-    } catch (error) {
-      console.error('Error fetching user attributes:', error);
-    }
-  };
+  useEffect(() => {
+    const getUserAttributes = async () => {
+      try {
+        const attributes = await fetchUserAttributes();
+        setFirstName(attributes['custom:firstname'] || '');
+      } catch (error) {
+        console.error('Error fetching user attributes:', error);
+      }
+    };
 
+    getUserAttributes();
+  }, []);
+
+  return (
+    <main>
+      <h1>Hello {firstName || user?.signInDetails?.loginId}</h1>
+      <button onClick={signOut}>Sign out</button>
+
+      {/* StorageBrowser Component */}
+      <h2>Your Files</h2>
+      <StorageBrowser />
+    </main>
+  );
+}
+
+export default function App() {
   return (
     <Authenticator
       initialState="signIn"
       hideSignUp={true}
     >
-      {({ signOut, user }) => {
-        // Call getUserAttributes when the component renders with a user
-        useEffect(() => {
-          getUserAttributes();
-        }, []);
-
-        return (
-          <main>
-            <h1>Hello {firstName || user?.signInDetails?.loginId}</h1>
-            <button onClick={signOut}>Sign out</button>
-
-            {/* StorageBrowser Component */}
-            <h2>Your Files</h2>
-            <StorageBrowser />
-          </main>
-        );
-      }}
+      {(props) => <AuthenticatedContent {...props} />}
     </Authenticator>
   );
 }
