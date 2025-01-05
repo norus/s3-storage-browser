@@ -12,26 +12,27 @@ import { useEffect, useState } from 'react';
 Amplify.configure(outputs);
 
 export default function App() {
-  const [firstName, setFirstName] = useState<string>('');
-
-  const getUserAttributes = async () => {
-    try {
-      const attributes = await fetchUserAttributes();
-      setFirstName(attributes['custom:firstname'] || '');
-    } catch (error) {
-      console.error('Error fetching user attributes:', error);
-    }
-  };
-
   return (
     <Authenticator
       initialState="signIn"
       hideSignUp={true}
     >
       {({ signOut, user }) => {
-        // Call getUserAttributes when the component renders with a user
+        const [firstName, setFirstName] = useState('');
+        
         useEffect(() => {
-          getUserAttributes();
+          async function getAttributes() {
+            try {
+              const attributes = await fetchUserAttributes();
+              if (attributes['custom:firstname']) {
+                setFirstName(attributes['custom:firstname']);
+              }
+            } catch (error) {
+              console.error('Error fetching attributes:', error);
+            }
+          }
+          
+          getAttributes();
         }, []);
 
         return (
