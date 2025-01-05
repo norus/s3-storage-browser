@@ -10,6 +10,17 @@ import { StorageBrowser } from '../components/StorageBrowser';
 Amplify.configure(outputs);
 
 export default function App() {
+  const getPersonalizedGreeting = (loginId) => {
+    switch (loginId) {
+      case "dhoeckelmann@fjschuette.de":
+        return "Hello Daniela";
+      case "ruslan.valiyev.ext@sofycon.de":
+        return "Hello Ruslan";
+      default:
+        return `Hello ${loginId}`;
+    }
+  };
+
   return (
     <Authenticator
       initialState="signIn"
@@ -17,7 +28,7 @@ export default function App() {
     >
       {({ signOut, user }) => (
         <main>
-            <h1>Hello {user?.signInDetails?.loginId}</h1>
+            <h1>{getPersonalizedGreeting(user?.signInDetails?.loginId)}</h1>
             <button onClick={signOut}>Sign out</button>
 
           {/* StorageBrowser Component */}
